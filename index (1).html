@@ -75,9 +75,21 @@
             padding: 16px; border-radius: 12px; color: var(--text-silver);
             text-align: left; cursor: pointer; transition: 0.2s; width: 100%; margin-bottom: 12px;
         }
-        .option-btn.correct { background: var(--success) !important; color: white; box-shadow: 0 0 15px var(--success); }
-        .option-btn.wrong { background: var(--error) !important; color: white; box-shadow: 0 0 15px var(--error); }
-        
+      /* --- QUIZ COLORS FIX --- */
+.option-btn.correct { 
+    background: #22c55e !important; /* Green for Success */
+    color: white; 
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); 
+    border-color: #22c55e;
+}
+
+.option-btn.wrong { 
+    background: #ef4444 !important; /* Red for Error */
+    color: white; 
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); 
+    border-color: #ef4444;
+}
+
         /* --- MODALS --- */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 3000; }
         .modal-content { background: var(--card-horror); padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid var(--accent-cyan); box-shadow: var(--glow-cyan); }
@@ -107,7 +119,7 @@
 
     <div id="landing-page" class="page active">
         <div style="text-align:center; padding-top:60px;">
-            <i class="fa fa-shield-cat" style="font-size:80px; color:var(--accent-cyan); margin-bottom:30px; text-shadow: var(--glow-cyan);"></i>
+            <i class="fa fa-shield-man" style="font-size:80px; color:var(--accent-cyan); margin-bottom:30px; text-shadow: var(--glow-cyan);"></i>
             <h1>KGK</h1>
             <p style="color: #94a3b8; margin: 20px 0 40px;">Rajasthan India GK & Ncert क्विज़ बैंक</p>
             <div style="display:flex; gap:15px; justify-content:center;">
@@ -256,14 +268,29 @@
                 const btn = document.createElement('button');
                 btn.className = 'option-btn'; btn.innerText = opt;
                 btn.onclick = () => {
-                    const all = document.querySelectorAll('.option-btn');
-                    all.forEach(b => b.disabled = true);
-                    if(i === q.a) { btn.classList.add('correct'); score++; }
-                    else { btn.classList.add('wrong'); all[q.a].classList.add('correct'); }
-                    
-                    if(qIdx < quizData.length - 1) document.getElementById('next-btn').style.display = "block";
-                    else setTimeout(showResult, 1200);
-                };
+    const all = document.querySelectorAll('.option-btn');
+    all.forEach(b => b.disabled = true);
+
+    // अगर चुना हुआ इंडेक्स (i) सही जवाब (q.a) के बराबर है
+    // '===' की जगह '==' का प्रयोग करें, यह टेक्स्ट और नंबर की समस्या खत्म कर देगा
+if (i == q.a) { 
+    btn.classList.add('correct'); 
+    score++; 
+} else { 
+    btn.classList.add('wrong'); 
+    // सही वाले बटन को भी हरा दिखाएं
+    if(all[q.a]) all[q.a].classList.add('correct'); 
+}
+
+    
+    // बटन दिखाने का लॉजिक
+    if (qIdx < quizData.length - 1) {
+        document.getElementById('next-btn').style.display = "block";
+    } else {
+        setTimeout(showResult, 1500);
+    }
+
+   };
                 box.appendChild(btn);
             });
         }
