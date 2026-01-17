@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KGK PREMIUM | Official Portal</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-horror: #020617;
+            --card-horror: #0f172a;
+            --accent-cyan: #00d2ff;
+            --glow-cyan: 0 0 20px rgba(0, 210, 255, 0.4);
+            --text-silver: #e2e8f0;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-horror); color: var(--text-silver); min-height: 100vh; overflow-x: hidden; }
+
+        /* --- HEADER --- */
+        header {
+            background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(15px);
+            padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-glass); position: sticky; top: 0; z-index: 1000;
+        }
+        .logo h2 { color: var(--accent-cyan); font-weight: 800; letter-spacing: 2px; cursor: pointer; text-shadow: var(--glow-cyan); }
+        .nav-toggle { font-size: 24px; color: var(--accent-cyan); cursor: pointer; }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            position: fixed; top: 0; left: -300px; width: 280px; height: 100%;
+            background: var(--card-horror); border-right: 1px solid var(--border-glass);
+            z-index: 2000; transition: 0.4s; padding: 30px 20px;
+        }
+        .sidebar.active { left: 0; box-shadow: 10px 0 50px #000; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; }
+        .overlay.active { display: block; }
+        .menu-item { padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; border-radius: 10px; transition: 0.3s; margin-bottom: 5px; }
+        .menu-item:hover { background: rgba(0, 210, 255, 0.1); color: var(--accent-cyan); }
+
+        /* --- UI PAGES --- */
+        .page { display: none; padding: 40px 6%; max-width: 1200px; margin: 0 auto; animation: slideUp 0.5s ease; }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title { margin: 40px 0 20px; font-size: 1.5rem; color: var(--accent-cyan); border-left: 4px solid var(--accent-cyan); padding-left: 15px; text-transform: uppercase; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        
+        .category-card {
+            background: var(--card-horror); padding: 30px 20px; border-radius: 20px; border: 1px solid var(--border-glass);
+            text-align: center; cursor: pointer; transition: 0.3s;
+        }
+        .category-card:hover { transform: translateY(-8px); border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+        .category-card i { font-size: 40px; color: var(--accent-cyan); margin-bottom: 15px; }
+
+        /* --- NCERT --- */
+        .ncert-box { background: rgba(255,255,255,0.02); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-glass); }
+        .ncert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
+        .sub-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: #94a3b8; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 0.85rem; }
+        .sub-btn:hover { background: var(--accent-cyan); color: #000; box-shadow: var(--glow-cyan); }
+
+        /* --- QUIZ --- */
+        .quiz-card { background: var(--card-horror); padding: 35px; border-radius: 25px; border: 1px solid var(--border-glass); max-width: 700px; margin: 0 auto; }
+        .progress-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        #progress-fill { height: 100%; background: var(--accent-cyan); width: 0%; transition: 0.4s; }
+        
+        .option-btn {
+            background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass);
+            padding: 16px; border-radius: 12px; color: var(--text-silver);
+            text-align: left; cursor: pointer; transition: 0.2s; width: 100%; margin-bottom: 12px;
+        }
+        .option-btn.correct { background: var(--success) !important; color: white; box-shadow: 0 0 15px var(--success); }
+        .option-btn.wrong { background: var(--error) !important; color: white; box-shadow: 0 0 15px var(--error); }
+        
+        /* --- MODALS --- */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 3000; }
+        .modal-content { background: var(--card-horror); padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid var(--accent-cyan); box-shadow: var(--glow-cyan); }
+        input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--border-glass); color: white; border-radius: 10px; margin-bottom: 20px; outline: none; }
+        .btn-main { background: linear-gradient(45deg, #0082ff, var(--accent-cyan)); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; }
+
+        .certificate { background: #fff; color: #000; padding: 30px; border: 10px double var(--accent-cyan); border-radius: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <h2 style="color:var(--accent-cyan); text-align:center; margin-bottom:30px;">KGK MENU</h2>
+        <div class="menu-item" onclick="goHome()"><i class="fa fa-home"></i> होम पेज</div>
+        <div class="menu-item" onclick="openModal('login-modal')"><i class="fa fa-sign-in"></i> लॉगिन</div>
+        <div class="menu-item" onclick="openModal('reg-modal')"><i class="fa fa-user-plus"></i> रजिस्टर</div>
+        <div class="menu-item" onclick="location.reload()" style="color:var(--error); margin-top:20px;"><i class="fa fa-power-off"></i> लॉग आउट</div>
+    </div>
+
+    <header>
+        <div class="nav-toggle" onclick="toggleSidebar()"><i class="fa fa-bars-staggered"></i></div>
+        <div class="logo" onclick="goHome()"><h2>KGK</h2></div>
+        <div id="user-tag" style="font-size: 12px; color: var(--accent-cyan);">GUEST MODE</div>
+    </header>
+
+    <div id="landing-page" class="page active">
+        <div style="text-align:center; padding-top:60px;">
+            <i class="fa fa-shield-cat" style="font-size:80px; color:var(--accent-cyan); margin-bottom:30px; text-shadow: var(--glow-cyan);"></i>
+            <h1>KGK</h1>
+            <p style="color: #94a3b8; margin: 20px 0 40px;">Rajasthan India GK & Ncert क्विज़ बैंक</p>
+            <div style="display:flex; gap:15px; justify-content:center;">
+                <button class="btn-main" style="width:150px" onclick="openModal('login-modal')">लॉगिन</button>
+                <button class="btn-main" style="width:150px; background:transparent; border:1px solid var(--accent-cyan);" onclick="openModal('reg-modal')">रजिस्टर</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="home-page" class="page">
+        <h1>नमस्ते, <span id="user-name" style="color:var(--accent-cyan)">छात्र</span></h1>
+        
+        <h3 class="section-title">Rajasthan Special</h3>
+        <div class="grid-container">
+            <div class="category-card" onclick="startQuiz('raj_hist')"><i class="fa-solid fa-fort-awesome"></i><h3>इतिहास</h3></div>
+            <div class="category-card" onclick="startQuiz('raj_geo')"><i class="fa-solid fa-mountain-sun"></i><h3>भूगोल</h3></div>
+            <div class="category-card" onclick="startQuiz('raj_polity')"><i class="fa-solid fa-building-columns"></i><h3>राजनीति</h3></div>
+        </div>
+
+        <h3 class="section-title">India GK</h3>
+        <div class="grid-container">
+            <div class="category-card" onclick="startQuiz('ind_hist')"><i class="fa-solid fa-landmark"></i><h3>इतिहास</h3></div>
+            <div class="category-card" onclick="startQuiz('ind_polity')"><i class="fa-solid fa-book"></i><h3>राजनीति</h3></div>
+            <div class="category-card" onclick="startQuiz('ind_geo')"><i class="fa-solid fa-map"></i><h3>भूगोल</h3></div>
+        </div>
+
+        <h3 class="section-title">NCERT (6-12)</h3>
+        <div id="ncert-area"></div>
+    </div>
+
+    <div id="quiz-page" class="page">
+        <div class="quiz-card">
+            <div id="quiz-active">
+                <span id="quiz-topic" style="color:var(--accent-cyan); font-weight:700; text-transform:uppercase;">TOPIC</span>
+                <div class="progress-bar"><div id="progress-fill"></div></div>
+                <h2 id="question-text" style="margin: 20px 0; font-size: 1.2rem;">Loading Questions...</h2>
+                <div id="options-box"></div>
+                <button id="next-btn" class="btn-main" style="display:none; margin-top:20px;">अगला सवाल</button>
+            </div>
+            <div id="result-box" style="display:none;">
+                <div class="certificate">
+                    <h3>KGK CERTIFICATE</h3>
+                    <p>प्रमाणित किया जाता है कि</p>
+                    <h2 id="cert-name">छात्र</h2>
+                    <p>का स्कोर रहा:</p>
+                    <h1 id="cert-score" style="color:var(--accent-cyan)">0/0</h1>
+                </div>
+                <button class="btn-main" style="margin-top:20px;" onclick="showPage('home-page')">होम पेज</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="text-align:center; margin-bottom:20px;">लॉगिन</h2>
+            <input type="email" id="l-email" placeholder="ईमेल आईडी">
+            <input type="password" id="l-pass" placeholder="पासवर्ड">
+            <button id="l-btn" class="btn-main" onclick="handleLogin()">प्रवेश करें</button>
+            <p onclick="closeModal('login-modal')" style="text-align:center; margin-top:20px; cursor:pointer; font-size:13px;">बंद करें</p>
+        </div>
+    </div>
+
+    <div id="reg-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="text-align:center; margin-bottom:20px;">रजिस्ट्रेशन</h2>
+            <input type="text" id="r-name" placeholder="पूरा नाम">
+            <input type="email" id="r-email" placeholder="ईमेल आईडी">
+            <input type="password" id="r-pass" placeholder="पासवर्ड">
+            <button id="r-btn" class="btn-main" onclick="handleRegister()">खाता बनाएं</button>
+            <p onclick="closeModal('reg-modal')" style="text-align:center; margin-top:20px; cursor:pointer; font-size:13px;">बंद करें</p>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMANuxBsJxBx2oR0Q8VbkXIqGn4O32IreJl2pXUFzNvZwNXsGF5WXUGlSvsGKnA0hcOg/exec";
+        
+        let currentUser = null, quizData = [], qIdx = 0, score = 0;
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function goHome() {
+            toggleSidebar();
+            currentUser ? showPage('home-page') : showPage('landing-page');
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
+            if(!email || !pass) return alert("Fill Info");
+            const btn = document.getElementById('l-btn');
+            btn.innerText = "Checking..."; btn.disabled = true;
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=login&email=${email}&pass=${pass}`);
+                const name = await res.text();
+                if(name === "wrong") alert("Incorrect Login!");
+                else {
+                    currentUser = name;
+                    document.getElementById('user-name').innerText = name;
+                    document.getElementById('user-tag').innerText = "LOGGED IN: " + name;
+                    closeModal('login-modal'); showPage('home-page');
+                }
+            } catch(e) { alert("Server Error"); }
+            btn.innerText = "Login"; btn.disabled = false;
+        }
+
+        async function handleRegister() {
+            const n = document.getElementById('r-name').value;
+            const e = document.getElementById('r-email').value;
+            const p = document.getElementById('r-pass').value;
+            if(!n || !e || !p) return alert("Fill All");
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=signup&name=${n}&email=${e}&pass=${p}`);
+                const msg = await res.text();
+                if(msg === "exists") alert("Email already exists!");
+                else { alert("Success! Now Login."); closeModal('reg-modal'); openModal('login-modal'); }
+            } catch(e) { alert("Error"); }
+        }
+
+        async function startQuiz(sheet) {
+            showPage('quiz-page');
+            document.getElementById('quiz-active').style.display = 'block';
+            document.getElementById('result-box').style.display = 'none';
+            document.getElementById('quiz-topic').innerText = sheet.replace(/_/g, ' ');
+            document.getElementById('options-box').innerHTML = "Loading Options...";
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?sub=${sheet}`);
+                quizData = await res.json();
+                qIdx = 0; score = 0;
+                loadQuestion();
+            } catch(e) { alert("No data found in Sheet!"); showPage('home-page'); }
+        }
+
+        function loadQuestion() {
+            const q = quizData[qIdx];
+            document.getElementById('question-text').innerText = (qIdx+1) + ". " + q.t;
+            document.getElementById('progress-fill').style.width = ((qIdx+1)/quizData.length)*100 + "%";
+            const box = document.getElementById('options-box'); box.innerHTML = "";
+            document.getElementById('next-btn').style.display = "none";
+
+            q.o.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn'; btn.innerText = opt;
+                btn.onclick = () => {
+                    const all = document.querySelectorAll('.option-btn');
+                    all.forEach(b => b.disabled = true);
+                    if(i === q.a) { btn.classList.add('correct'); score++; }
+                    else { btn.classList.add('wrong'); all[q.a].classList.add('correct'); }
+                    
+                    if(qIdx < quizData.length - 1) document.getElementById('next-btn').style.display = "block";
+                    else setTimeout(showResult, 1200);
+                };
+                box.appendChild(btn);
+            });
+        }
+
+        document.getElementById('next-btn').onclick = () => { qIdx++; loadQuestion(); };
+
+        function showResult() {
+            document.getElementById('quiz-active').style.display = 'none';
+            document.getElementById('result-box').style.display = 'block';
+            document.getElementById('cert-name').innerText = currentUser;
+            document.getElementById('cert-score').innerText = score + " / " + quizData.length;
+        }
+
+        function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // NCERT GENERATOR
+        const na = document.getElementById('ncert-area');
+        for(let i=6; i<=12; i++) {
+            na.innerHTML += `<div class="ncert-box"><div>कक्षा ${i}</div><div class="ncert-grid">
+                <div class="sub-btn" onclick="startQuiz('ncert${i}_hist')">इतिहास</div>
+                <div class="sub-btn" onclick="startQuiz('ncert${i}_geo')">भूगोल</div>
+                <div class="sub-btn" onclick="startQuiz('ncert${i}_polity')">राजनीति</div>
+            </div></div>`;
+        }
+    </script>
+</body>
+</html>
+
