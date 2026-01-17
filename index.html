@@ -23,7 +23,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-horror); color: var(--text-silver); min-height: 100vh; overflow-x: hidden; }
 
-        /* --- HEADER --- */
         header {
             background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(15px);
             padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
@@ -32,7 +31,6 @@
         .logo h2 { color: var(--accent-cyan); font-weight: 800; letter-spacing: 2px; cursor: pointer; text-shadow: var(--glow-cyan); }
         .nav-toggle { font-size: 24px; color: var(--accent-cyan); cursor: pointer; }
 
-        /* --- SIDEBAR --- */
         .sidebar {
             position: fixed; top: 0; left: -300px; width: 280px; height: 100%;
             background: var(--card-horror); border-right: 1px solid var(--border-glass);
@@ -44,7 +42,6 @@
         .menu-item { padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; border-radius: 10px; transition: 0.3s; margin-bottom: 5px; }
         .menu-item:hover { background: rgba(0, 210, 255, 0.1); color: var(--accent-cyan); }
 
-        /* --- UI PAGES --- */
         .page { display: none; padding: 40px 6%; max-width: 1200px; margin: 0 auto; animation: slideUp 0.5s ease; }
         .page.active { display: block; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -59,13 +56,11 @@
         .category-card:hover { transform: translateY(-8px); border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
         .category-card i { font-size: 40px; color: var(--accent-cyan); margin-bottom: 15px; }
 
-        /* --- NCERT --- */
         .ncert-box { background: rgba(255,255,255,0.02); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border-glass); }
         .ncert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
         .sub-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: #94a3b8; padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-size: 0.85rem; }
         .sub-btn:hover { background: var(--accent-cyan); color: #000; box-shadow: var(--glow-cyan); }
 
-        /* --- QUIZ --- */
         .quiz-card { background: var(--card-horror); padding: 35px; border-radius: 25px; border: 1px solid var(--border-glass); max-width: 700px; margin: 0 auto; }
         .progress-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 10px; margin: 20px 0; overflow: hidden; }
         #progress-fill { height: 100%; background: var(--accent-cyan); width: 0%; transition: 0.4s; }
@@ -75,22 +70,9 @@
             padding: 16px; border-radius: 12px; color: var(--text-silver);
             text-align: left; cursor: pointer; transition: 0.2s; width: 100%; margin-bottom: 12px;
         }
-      /* --- QUIZ COLORS FIX --- */
-.option-btn.correct { 
-    background: #22c55e !important; /* Green for Success */
-    color: white; 
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); 
-    border-color: #22c55e;
-}
+        .option-btn.correct { background: #22c55e !important; color: white; box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); border-color: #22c55e; }
+        .option-btn.wrong { background: #ef4444 !important; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); border-color: #ef4444; }
 
-.option-btn.wrong { 
-    background: #ef4444 !important; /* Red for Error */
-    color: white; 
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); 
-    border-color: #ef4444;
-}
-
-        /* --- MODALS --- */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 3000; }
         .modal-content { background: var(--card-horror); padding: 40px; border-radius: 25px; width: 90%; max-width: 400px; border: 1px solid var(--accent-cyan); box-shadow: var(--glow-cyan); }
         input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--border-glass); color: white; border-radius: 10px; margin-bottom: 20px; outline: none; }
@@ -259,37 +241,36 @@
 
         function loadQuestion() {
             const q = quizData[qIdx];
-            document.getElementById('question-text').innerText = (qIdx+1) + ". " + q.t;
-            document.getElementById('progress-fill').style.width = ((qIdx+1)/quizData.length)*100 + "%";
-            const box = document.getElementById('options-box'); box.innerHTML = "";
+            document.getElementById('question-text').innerText = (qIdx + 1) + ". " + q.t;
+            document.getElementById('progress-fill').style.width = ((qIdx + 1) / quizData.length) * 100 + "%";
+            const box = document.getElementById('options-box'); 
+            box.innerHTML = "";
             document.getElementById('next-btn').style.display = "none";
 
             q.o.forEach((opt, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn'; btn.innerText = opt;
+                btn.className = 'option-btn'; 
+                btn.innerText = opt;
+                
                 btn.onclick = () => {
-    const all = document.querySelectorAll('.option-btn');
-    all.forEach(b => b.disabled = true);
+                    const all = document.querySelectorAll('.option-btn');
+                    all.forEach(b => b.disabled = true);
 
-// '===' की जगह '==' का इस्तेमाल करें
-if (i == q.a) { 
-    btn.classList.add('correct'); 
-    score++; 
-} else { 
-    btn.classList.add('wrong'); 
-    // सही उत्तर वाले बटन को भी हरा दिखाएं
-    if(all[q.a]) all[q.a].classList.add('correct'); 
-}
-
-    
-    // बटन दिखाने का लॉजिक
-    if (qIdx < quizData.length - 1) {
-        document.getElementById('next-btn').style.display = "block";
-    } else {
-        setTimeout(showResult, 1500);
-    }
-
-   };
+                    if (i == q.a) { 
+                        btn.classList.add('correct'); 
+                        score++; 
+                    } else { 
+                        btn.classList.add('wrong'); 
+                        score -= 0.25; // Negative Marking
+                        if(all[q.a]) all[q.a].classList.add('correct'); 
+                    }
+                    
+                    if (qIdx < quizData.length - 1) {
+                        document.getElementById('next-btn').style.display = "block";
+                    } else {
+                        setTimeout(showResult, 1500);
+                    }
+                };
                 box.appendChild(btn);
             });
         }
@@ -299,15 +280,14 @@ if (i == q.a) {
         function showResult() {
             document.getElementById('quiz-active').style.display = 'none';
             document.getElementById('result-box').style.display = 'block';
-            document.getElementById('cert-name').innerText = currentUser;
-            document.getElementById('cert-score').innerText = score + " / " + quizData.length;
+            document.getElementById('cert-name').innerText = currentUser || "Guest";
+            document.getElementById('cert-score').innerText = score.toFixed(2) + " / " + quizData.length;
         }
 
         function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // NCERT GENERATOR
         const na = document.getElementById('ncert-area');
         for(let i=6; i<=12; i++) {
             na.innerHTML += `<div class="ncert-box"><div>कक्षा ${i}</div><div class="ncert-grid">
@@ -319,3 +299,4 @@ if (i == q.a) {
     </script>
 </body>
 </html>
+
