@@ -271,14 +271,13 @@
     const all = document.querySelectorAll('.option-btn');
     all.forEach(b => b.disabled = true);
 
-    // अगर चुना हुआ इंडेक्स (i) सही जवाब (q.a) के बराबर है
-    // '===' की जगह '==' का प्रयोग करें, यह टेक्स्ट और नंबर की समस्या खत्म कर देगा
+// '===' की जगह '==' का इस्तेमाल करें
 if (i == q.a) { 
     btn.classList.add('correct'); 
     score++; 
 } else { 
     btn.classList.add('wrong'); 
-    // सही वाले बटन को भी हरा दिखाएं
+    // सही उत्तर वाले बटन को भी हरा दिखाएं
     if(all[q.a]) all[q.a].classList.add('correct'); 
 }
 
