@@ -79,6 +79,15 @@
         .btn-main { background: linear-gradient(45deg, #0082ff, var(--accent-cyan)); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; }
 
         .certificate { background: #fff; color: #000; padding: 30px; border: 10px double var(--accent-cyan); border-radius: 15px; text-align: center; }
+            #timer-box {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent-cyan);
+    text-align: right;
+    margin-bottom: 10px;
+    text-shadow: var(--glow-cyan);
+}
+
     </style>
 </head>
 <body>
@@ -133,6 +142,8 @@
     </div>
 
     <div id="quiz-page" class="page">
+      <div id="timer-box">⏱️ 20s</div>
+
         <div class="quiz-card">
             <div id="quiz-active">
                 <span id="quiz-topic" style="color:var(--accent-cyan); font-weight:700; text-transform:uppercase;">TOPIC</span>
@@ -174,128 +185,168 @@
             <p onclick="closeModal('reg-modal')" style="text-align:center; margin-top:20px; cursor:pointer; font-size:13px;">बंद करें</p>
         </div>
     </div>
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMANuxBsJxBx2oR0Q8VbkXIqGn4O32IreJl2pXUFzNvZwNXsGF5WXUGlSvsGKnA0hcOg/exec";
+    
+    // यहाँ वेरिएबल्स जोड़े गए हैं
+    let currentUser = null, quizData = [], qIdx = 0, score = 0;
+    let timerInterval; 
+    let timeLeft = 20;
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMANuxBsJxBx2oR0Q8VbkXIqGn4O32IreJl2pXUFzNvZwNXsGF5WXUGlSvsGKnA0hcOg/exec";
-        
-        let currentUser = null, quizData = [], qIdx = 0, score = 0;
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
+    function goHome() {
+        toggleSidebar();
+        currentUser ? showPage('home-page') : showPage('landing-page');
+    }
+
+    // --- लॉगिन फंक्शन ---
+    async function handleLogin() {
+        const email = document.getElementById('l-email').value;
+        const pass = document.getElementById('l-pass').value;
+        if(!email || !pass) return alert("Fill Info");
+        const btn = document.getElementById('l-btn');
+        btn.innerText = "Checking..."; btn.disabled = true;
+
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=login&email=${email}&pass=${pass}`);
+            const name = await res.text();
+            if(name === "wrong") alert("Incorrect Login!");
+            else {
+                currentUser = name;
+                document.getElementById('user-name').innerText = name;
+                document.getElementById('user-tag').innerText = "LOGGED IN: " + name;
+                closeModal('login-modal'); showPage('home-page');
+            }
+        } catch(e) { alert("Server Error"); }
+        btn.innerText = "Login"; btn.disabled = false;
+    }
+
+    async function handleRegister() {
+        const n = document.getElementById('r-name').value;
+        const e = document.getElementById('r-email').value;
+        const p = document.getElementById('r-pass').value;
+        if(!n || !e || !p) return alert("Fill All");
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=signup&name=${n}&email=${e}&pass=${p}`);
+            const msg = await res.text();
+            if(msg === "exists") alert("Email already exists!");
+            else { alert("Success! Now Login."); closeModal('reg-modal'); openModal('login-modal'); }
+        } catch(e) { alert("Error"); }
+    }
+
+    // --- टाइमर फंक्शन ---
+    function startTimer() {
+        timeLeft = 20;
+        document.getElementById('timer-box').innerText = "⏱️ " + timeLeft + "s";
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-box').innerText = "⏱️ " + timeLeft + "s";
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleTimeOut();
+            }
+        }, 1000);
+    }
+
+    function handleTimeOut() {
+        const all = document.querySelectorAll('.option-btn');
+        all.forEach(b => b.disabled = true);
+        score -= 0.25; 
+        const q = quizData[qIdx];
+        if(all[q.a]) all[q.a].classList.add('correct'); 
+        alert("समय समाप्त! -0.25 अंक काटे गए।");
+        if (qIdx < quizData.length - 1) {
+            document.getElementById('next-btn').style.display = "block";
+        } else {
+            setTimeout(showResult, 1500);
         }
+    }
 
-        function goHome() {
-            toggleSidebar();
-            currentUser ? showPage('home-page') : showPage('landing-page');
-        }
+    // --- क्विज़ फंक्शन ---
+    async function startQuiz(sheet) {
+        showPage('quiz-page');
+        document.getElementById('quiz-active').style.display = 'block';
+        document.getElementById('result-box').style.display = 'none';
+        document.getElementById('quiz-topic').innerText = sheet.replace(/_/g, ' ');
+        document.getElementById('options-box').innerHTML = "Loading Options...";
 
-        async function handleLogin() {
-            const email = document.getElementById('l-email').value;
-            const pass = document.getElementById('l-pass').value;
-            if(!email || !pass) return alert("Fill Info");
-            const btn = document.getElementById('l-btn');
-            btn.innerText = "Checking..."; btn.disabled = true;
+        try {
+            const res = await fetch(`${SCRIPT_URL}?sub=${sheet}`);
+            quizData = await res.json();
+            qIdx = 0; score = 0;
+            loadQuestion();
+        } catch(e) { alert("No data found!"); showPage('home-page'); }
+    }
 
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&email=${email}&pass=${pass}`);
-                const name = await res.text();
-                if(name === "wrong") alert("Incorrect Login!");
-                else {
-                    currentUser = name;
-                    document.getElementById('user-name').innerText = name;
-                    document.getElementById('user-tag').innerText = "LOGGED IN: " + name;
-                    closeModal('login-modal'); showPage('home-page');
+    function loadQuestion() {
+        startTimer(); // यहाँ टाइमर शुरू होता है
+        const q = quizData[qIdx];
+        document.getElementById('question-text').innerText = (qIdx + 1) + ". " + q.t;
+        document.getElementById('progress-fill').style.width = ((qIdx + 1) / quizData.length) * 100 + "%";
+        const box = document.getElementById('options-box'); 
+        box.innerHTML = "";
+        document.getElementById('next-btn').style.display = "none";
+
+        q.o.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn'; 
+            btn.innerText = opt;
+            
+            btn.onclick = () => {
+                clearInterval(timerInterval); // उत्तर देने पर टाइमर रुकता है
+                const all = document.querySelectorAll('.option-btn');
+                all.forEach(b => b.disabled = true);
+
+                if (i == q.a) { 
+                    btn.classList.add('correct'); 
+                    score++; 
+                } else { 
+                    btn.classList.add('wrong'); 
+                    score -= 0.25;
+                    if(all[q.a]) all[q.a].classList.add('correct'); 
                 }
-            } catch(e) { alert("Server Error"); }
-            btn.innerText = "Login"; btn.disabled = false;
-        }
-
-        async function handleRegister() {
-            const n = document.getElementById('r-name').value;
-            const e = document.getElementById('r-email').value;
-            const p = document.getElementById('r-pass').value;
-            if(!n || !e || !p) return alert("Fill All");
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=signup&name=${n}&email=${e}&pass=${p}`);
-                const msg = await res.text();
-                if(msg === "exists") alert("Email already exists!");
-                else { alert("Success! Now Login."); closeModal('reg-modal'); openModal('login-modal'); }
-            } catch(e) { alert("Error"); }
-        }
-
-        async function startQuiz(sheet) {
-            showPage('quiz-page');
-            document.getElementById('quiz-active').style.display = 'block';
-            document.getElementById('result-box').style.display = 'none';
-            document.getElementById('quiz-topic').innerText = sheet.replace(/_/g, ' ');
-            document.getElementById('options-box').innerHTML = "Loading Options...";
-
-            try {
-                const res = await fetch(`${SCRIPT_URL}?sub=${sheet}`);
-                quizData = await res.json();
-                qIdx = 0; score = 0;
-                loadQuestion();
-            } catch(e) { alert("No data found in Sheet!"); showPage('home-page'); }
-        }
-
-        function loadQuestion() {
-            const q = quizData[qIdx];
-            document.getElementById('question-text').innerText = (qIdx + 1) + ". " + q.t;
-            document.getElementById('progress-fill').style.width = ((qIdx + 1) / quizData.length) * 100 + "%";
-            const box = document.getElementById('options-box'); 
-            box.innerHTML = "";
-            document.getElementById('next-btn').style.display = "none";
-
-            q.o.forEach((opt, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn'; 
-                btn.innerText = opt;
                 
-                btn.onclick = () => {
-                    const all = document.querySelectorAll('.option-btn');
-                    all.forEach(b => b.disabled = true);
+                if (qIdx < quizData.length - 1) {
+                    document.getElementById('next-btn').style.display = "block";
+                } else {
+                    setTimeout(showResult, 1500);
+                }
+            };
+            box.appendChild(btn);
+        });
+    }
 
-                    if (i == q.a) { 
-                        btn.classList.add('correct'); 
-                        score++; 
-                    } else { 
-                        btn.classList.add('wrong'); 
-                        score -= 0.25; // Negative Marking
-                        if(all[q.a]) all[q.a].classList.add('correct'); 
-                    }
-                    
-                    if (qIdx < quizData.length - 1) {
-                        document.getElementById('next-btn').style.display = "block";
-                    } else {
-                        setTimeout(showResult, 1500);
-                    }
-                };
-                box.appendChild(btn);
-            });
-        }
+    document.getElementById('next-btn').onclick = () => { qIdx++; loadQuestion(); };
 
-        document.getElementById('next-btn').onclick = () => { qIdx++; loadQuestion(); };
+    function showResult() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-active').style.display = 'none';
+        document.getElementById('result-box').style.display = 'block';
+        document.getElementById('cert-name').innerText = currentUser || "Guest";
+        document.getElementById('cert-score').innerText = score.toFixed(2) + " / " + quizData.length;
+    }
 
-        function showResult() {
-            document.getElementById('quiz-active').style.display = 'none';
-            document.getElementById('result-box').style.display = 'block';
-            document.getElementById('cert-name').innerText = currentUser || "Guest";
-            document.getElementById('cert-score').innerText = score.toFixed(2) + " / " + quizData.length;
-        }
+    function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        function showPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    // NCERT बटन्स जेनरेटर
+    const na = document.getElementById('ncert-area');
+    for(let i=6; i<=12; i++) {
+        na.innerHTML += `<div class="ncert-box"><div>कक्षा ${i}</div><div class="ncert-grid">
+            <div class="sub-btn" onclick="startQuiz('ncert${i}_hist')">इतिहास</div>
+            <div class="sub-btn" onclick="startQuiz('ncert${i}_geo')">भूगोल</div>
+            <div class="sub-btn" onclick="startQuiz('ncert${i}_polity')">राजनीति</div>
+        </div></div>`;
+    }
+</script>
 
-        const na = document.getElementById('ncert-area');
-        for(let i=6; i<=12; i++) {
-            na.innerHTML += `<div class="ncert-box"><div>कक्षा ${i}</div><div class="ncert-grid">
-                <div class="sub-btn" onclick="startQuiz('ncert${i}_hist')">इतिहास</div>
-                <div class="sub-btn" onclick="startQuiz('ncert${i}_geo')">भूगोल</div>
-                <div class="sub-btn" onclick="startQuiz('ncert${i}_polity')">राजनीति</div>
-            </div></div>`;
-        }
-    </script>
+   
 </body>
 </html>
+
